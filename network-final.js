@@ -1,7 +1,7 @@
 
 window.addEventListener('load', makeNetwork);
 
-
+//Global Default Graph
 var graph = {
     nodes: [
         {id:'Node0'}, {id:'Node1'}, {id:'Node2'}, {id: 'Node3'},
@@ -15,6 +15,15 @@ var graph = {
         {source:'Node2',target:'Node3'},
         {source:'Node3',target:'Node4'}
     ]
+};
+
+//Global Default adjList
+var adjList = {
+    'Node0': {'Node1': 4, 'Node2': 1},
+    'Node1': {'Node0': 4, 'Node2': 2, 'Node3': 1},
+    'Node2': {'Node0': 1, 'Node1': 2, 'Node3': 5},
+    'Node3': {'Node1': 1, 'Node2': 5, 'Node4': 3},
+    'Node4': {'Node3': 3}
 };
 
 
@@ -87,7 +96,8 @@ function ticked() {
         .attr("x1", (d) => d.source.x)
         .attr("y1", function(d) { return d.source.y; })
         .attr("x2", function(d) { return d.target.x; })
-        .attr("y2", function(d) { return d.target.y; });
+        .attr("y2", function(d) { return d.target.y; })
+        .attr('id', (d) => d.source.id + '-' + d.target.id);
 
 }
 
@@ -104,6 +114,7 @@ function makeGraph() {
 
     //Create new graph and overwrite global
     graph = generateGraph(numNodes);
+
 
     makeNetwork();
 }
@@ -173,30 +184,81 @@ function generateGraph(numNodes) {
         newGraph['links'].push(newLink);
     }
 
+
+    //Update global adjList
+
+    // adjList = makeAdjList(edges);
+
+
+
     return newGraph;
 
 }
 
 function run() {
-
-    let test = ['Node0', 'Node1', 'Node2', 'Node3', 'Node4'];
-
-    d3.interval( function() {
-        console.log('Changing node');
-
-        d3.select('#' + test[0]).transition().duration(1000).attr('fill', 'red');
+//Runs Djikstras Algorithm generarting list of visited nodes in order
+//as well as list of traversed links in order
 
 
-        //Pop front
-        test.shift();
+    let start = 'Node0';
+
+    let visited = new Set();
+    let dist = new Map();
+    let pred = new Map();
+
+    //Initialize all distances to infinity
+    for (let key of Object.keys(adjList)) {
+        dist.set(key, Number.MAX_VALUE);
+    }
+
+    //Initialize all preds to null
+    for (let key of Object.keys(adjList)) {
+        pred.set(key, null);
+    }
+
+    dist.set(start, 0);
 
 
-    }, 500);
+
+
+
+    // let nodeIds = ['Node0', 'Node1', 'Node2', 'Node3', 'Node4'];
+
+    // let linkIds = ['Node0-Node2', 'Node1-Node2', 'Node1-Node3',
+    //     'Node2-Node3', 'Node3-Node4'];
+
+    // d3.interval( function() {
+    //     console.log('Changing node');
+
+    //     d3.select('#' + nodeIds[0]).transition().duration(1000).attr('fill', 'red');
+    //     d3.select('#' + linkIds[0]).transition().duration(1000).attr('stroke', 'red');
+
+    //     //Pop front
+    //     nodeIds.shift();
+    //     linkIds.shift();
+
+    // }, 1000);
 
 
 
 
 }
+
+
+
+function makeAdjList(edges) {
+///Turns edges into adjList, updates global adjList, called from
+//generateGraph
+
+}
+
+
+
+
+
+
+
+
 
 
 
