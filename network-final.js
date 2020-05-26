@@ -52,7 +52,7 @@ function makeNetwork(numVertices = 5) {
     drawLinks();
 
     //Register Listeners
-    d3.select('#start-btn').on('click',change);
+    d3.select('#start-btn').on('click',run);
     d3.select('#reset-btn').on('click',makeGraph)
 
 
@@ -73,7 +73,6 @@ function drawNodes() {
 function drawLinks() {
     linksG.selectAll('line').data(graph.links).enter()
         .append('line')
-        .attr('id', (d) => d['source'] + d['target'])
         .attr('stroke-width',2)
         .attr('stroke','black');
 }
@@ -92,15 +91,6 @@ function ticked() {
 
 }
 
-function change() {
-
-    for(let i = 0; i < 5; i++) {
-        console.log('Clicked' + i);
-        d3.select('#Node' + i).transition().duration(1000).attr('fill', 'red');
-    }
-
-
-}
 
 function makeGraph() {
 
@@ -112,9 +102,8 @@ function makeGraph() {
 
     d3.selectAll('g').remove();
 
-
-    //Construct new graph
-    graph = generateGraph()
+    //Create new graph and overwrite global
+    graph = generateGraph(numNodes);
 
     makeNetwork();
 }
@@ -139,17 +128,75 @@ function makeGraph() {
 // @todo: modify to fit power law instead of uniform distribution
 function generateGraph(numNodes) {
 
+    //Creates list of strings specifying Node0 -> NodenumNodes
     let graphNodes = [];
-
     for(let i = 0; i < numNodes; i++) {
         graphNodes.push('Node' + i);
     }
 
-    console.log(graphNodes)
+
+    //Start E-R
+    let edges = [];
+    let success = .2;
+
+    for (let i = 0; i < numNodes; i++) {
+        for (let j = i+1; j < numNodes; j++) {
+            if (i !== j) {
+                r = Math.random();
+
+                if (r >= success) {
+                    let edge = [graphNodes[i], graphNodes[j], 1];
+                    edges.push(edge);
+                }
+            }
+        }
+    }
+
+
+    //Modify global graph
+    let newGraph = {
+        nodes: [],
+        links: []
+    }
+
+    //Add nodes to newGraph object
+    for (let i = 0; i < numNodes; i++) {
+        //Create node object and push
+        let newNode = {id:graphNodes[i]};
+        newGraph['nodes'].push(newNode);
+    }
+
+    //Add links to newGraph object
+    for(let i = 0; i < edges.length; i++) {
+        //Create link object and push
+        let newLink = {source: edges[i][0], target: edges[i][1]};
+        newGraph['links'].push(newLink);
+    }
+
+    return newGraph;
 
 }
 
+function run() {
 
+    let test = ['Node0', 'Node1', 'Node2', 'Node3', 'Node4'];
+
+    d3.interval( function() {
+        console.log('Changing node');
+
+        d3.select('#' + test[0]).transition().duration(1000).attr('fill', 'red');
+
+
+        //Pop front
+        test.shift();
+
+
+    }, 500);
+
+
+
+
+}
 
 
 
