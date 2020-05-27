@@ -40,25 +40,60 @@ function makeNetwork(numVertices = 5) {
     linksG = svg.append('g').attr('class', 'links');
     nodesG = svg.append('g').attr('class', 'nodes');
 
-
-    //Configure Simulation
-    var simulation = d3.forceSimulation()
-        .force('center', d3.forceCenter(width/2,height/2))
-        .force('link', d3.forceLink()
-            .id(function (d) {return d.id;}))
-        .force('collide', d3.forceCollide(2*20))
-        .force('charge', d3.forceManyBody())
-        .force('link', d3.forceLink().id(function(d) {return d.id;}));
+    //Object to store x,y position as array for each node by name
+    var pos = {}
 
 
+    //Assign random x, y attributes to each object in nodes arrays
+    for (let node of graph.nodes) {
+        //Assigns rand x coordinate between 0 and 900 (width of svg)
+        let x = Math.floor(Math.random() * (900+1));
+        node.x = x;
 
-    //Draw the network
-    simulation.nodes(graph.nodes);
-    drawNodes();
-    simulation.on('tick', ticked);
+        //Assigns rand y coordinate between 0 and 600 (height of svg)
+        let y = Math.floor(Math.random() * (600+1));
+        node.y = y;
 
-    simulation.force('link').links(graph.links);
-    drawLinks();
+
+        pos[node.id] = [x,y];
+
+    }
+
+
+    var svg = d3.select('svg');
+
+    svg.append('g').attr('class', 'links');
+
+    svg.append('g').attr('class', 'nodes');
+
+
+
+
+    d3.select('.nodes').selectAll('circle').data(graph.nodes).enter().append('circle')
+        .attr('id', (d) => {return d['name']})
+        .attr('r',10).attr('fill', "red")
+        .attr('cx', (d) => d.x)
+        .attr('cy', (d) => d.y);
+
+
+
+    d3.select('.links').selectAll('line').data(graph.links).enter().append('line')
+        .attr('stroke-width',2)
+        .attr('stroke', 'black')
+        .attr("x1", (d) => (pos[d.source][0]))
+        .attr("y1", (d) => pos[d.source][1])
+        .attr("x2", (d) => pos[d.target][0])
+        .attr("y2", (d) => pos[d.target][1]);
+
+    coordsPixels('svg');
+
+
+
+
+
+
+
+
 
     //Register Listeners
     d3.select('#start-btn').on('click',run);
@@ -69,6 +104,27 @@ function makeNetwork(numVertices = 5) {
 
 
 }
+
+
+//Continuosly displays in text the coords of your mouse w crosshair
+function coordsPixels(selector) {
+    var txt = d3.select(selector).append('text');
+    var svg = d3.select(selector).attr('cursor', 'crosshair')
+        .on('mousemove', function() {
+
+            //uses d3.mouse(parent dom element/node) to get coordinates
+            //of mouse
+
+            //d3.mouse() returns [x,y] array
+            var pt = d3.mouse(svg.node());
+            txt.attr('x', 18+pt[0]).attr('y', 6+pt[1])
+                .text("" + pt[0] + ',' + pt[1]);
+        });
+}
+
+
+
+
 
 function drawNodes() {
     nodesG.selectAll("circle")
