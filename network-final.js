@@ -47,11 +47,17 @@ function makeNetwork(numVertices = 5) {
     //Assign random x, y attributes to each object in nodes arrays
     for (let node of graph.nodes) {
         //Assigns rand x coordinate between 0 and 900 (width of svg)
-        let x = Math.floor(Math.random() * (900+1));
+        // let x = Math.floor(Math.random() * (900+1));
+
+        //Random number between 100 and 800
+        let x = Math.floor(Math.random() * (800-100 + 1) + 100);
         node.x = x;
 
         //Assigns rand y coordinate between 0 and 600 (height of svg)
-        let y = Math.floor(Math.random() * (600+1));
+        // let y = Math.floor(Math.random() * (600+1));
+
+        //Random number between 100 and 500
+        let y = Math.floor(Math.random() * (500-100 + 1) + 100)
         node.y = y;
 
 
@@ -73,8 +79,8 @@ function makeNetwork(numVertices = 5) {
         .attr('id', (d) => {return d['name']})
         .attr('r',10).attr('fill', "red")
         .attr('cx', (d) => d.x)
-        .attr('cy', (d) => d.y);
-
+        .attr('cy', (d) => d.y)
+        .attr("id", (d) => d['id'])
 
 
     d3.select('.links').selectAll('line').data(graph.links).enter().append('line')
@@ -83,15 +89,8 @@ function makeNetwork(numVertices = 5) {
         .attr("x1", (d) => (pos[d.source][0]))
         .attr("y1", (d) => pos[d.source][1])
         .attr("x2", (d) => pos[d.target][0])
-        .attr("y2", (d) => pos[d.target][1]);
-
-    coordsPixels('svg');
-
-
-
-
-
-
+        .attr("y2", (d) => pos[d.target][1])
+        .attr('id', (d) => d.source + '-' + d.target);
 
 
 
@@ -100,10 +99,21 @@ function makeNetwork(numVertices = 5) {
     d3.select('#reset-btn').on('click',makeGraph)
 
 
+    var drag_handler = d3.drag()
+        .on('drag', function (d) {
+            d3.select(this)
+            .attr('cx', d.x = d3.event.x)
+            .attr('cy', d.y = d3.event.y);
+        });
 
+
+    //apply drag_handler to our circles
+    drag_handler(d3.select('.nodes').selectAll('circle'));
+    coordsPixels('svg');
 
 
 }
+
 
 
 //Continuosly displays in text the coords of your mouse w crosshair
@@ -164,12 +174,10 @@ function makeGraph() {
     console.log(numNodes);
 
 
-
-
     d3.selectAll('g').remove();
 
-    //Create new graph and overwrite global
-    graph = generateGraph(numNodes);
+    // //Create new graph and overwrite global
+    // graph = generateGraph(numNodes);
 
 
     makeNetwork();

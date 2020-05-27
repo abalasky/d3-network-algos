@@ -7,6 +7,10 @@ a, a:visited {
   text-decoration: underline;
 }
 
+.active {
+    stroke: #000;
+    stroke-width: 2px;
+}
 
 #container {
   width: 940px;
