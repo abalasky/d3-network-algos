@@ -15,8 +15,17 @@ var graph = {
         {source:'Node1',target:'Node3'},
         {source:'Node2',target:'Node3'},
         {source:'Node3',target:'Node4'}
-    ]
+    ],
+    pos: {
+        'Node0': [294,233],
+        'Node1': [313,500],
+        'Node2': [521,136],
+        'Node3': [557,493],
+        'Node4': [117,143]
+    }
 };
+
+
 
 //Global Default adjList
 var adjList = {
@@ -33,6 +42,10 @@ var adjList = {
 var start = 'Node0'
 
 
+//Global radius for nodes
+var radius = 10;
+
+
 function makeNetwork(numVertices = 5) {
     //Main function called on page load to render network on svg
 
@@ -47,28 +60,15 @@ function makeNetwork(numVertices = 5) {
     linksG = svg.append('g').attr('class', 'links');
     nodesG = svg.append('g').attr('class', 'nodes');
 
-    //Object to store x,y position as array for each node by name
-    var pos = {}
-
-
-    //Assign random x, y attributes to each object in nodes arrays
+    //Assign pos to actual node objects for drawing
+    let counter = 0;
     for (let node of graph.nodes) {
-        //Assigns rand x coordinate between 0 and 900 (width of svg)
-        // let x = Math.floor(Math.random() * (900+1));
 
-        //Random number between 100 and 800
-        let x = Math.floor(Math.random() * (800-100 + 1) + 100);
-        node.x = x;
+        node.x = graph.pos[node.id][0];
 
-        //Assigns rand y coordinate between 0 and 600 (height of svg)
-        // let y = Math.floor(Math.random() * (600+1));
+        node.y = graph.pos[node.id][1];
 
-        //Random number between 100 and 500
-        let y = Math.floor(Math.random() * (500-100 + 1) + 100)
-        node.y = y;
-
-
-        pos[node.id] = [x,y];
+        counter += 1;
 
     }
 
@@ -84,7 +84,7 @@ function makeNetwork(numVertices = 5) {
 
     d3.select('.nodes').selectAll('circle').data(graph.nodes).enter().append('circle')
         .attr('id', (d) => {return d['name']})
-        .attr('r',10).attr('fill', "red")
+        .attr('r',radius).attr('fill', "red")
         .attr('cx', (d) => d.x)
         .attr('cy', (d) => d.y)
         .attr("id", (d) => d['id'])
@@ -93,10 +93,10 @@ function makeNetwork(numVertices = 5) {
     d3.select('.links').selectAll('line').data(graph.links).enter().append('line')
         .attr('stroke-width',2)
         .attr('stroke', 'black')
-        .attr("x1", (d) => (pos[d.source][0]))
-        .attr("y1", (d) => pos[d.source][1])
-        .attr("x2", (d) => pos[d.target][0])
-        .attr("y2", (d) => pos[d.target][1])
+        .attr("x1", (d) => graph.pos[d.source][0])
+        .attr("y1", (d) => graph.pos[d.source][1])
+        .attr("x2", (d) => graph.pos[d.target][0])
+        .attr("y2", (d) => graph.pos[d.target][1])
         .attr('id', (d) => d.source + '-' + d.target);
 
 
@@ -186,7 +186,8 @@ function makeGraph() {
 
     // //Create new graph and overwrite global
 
-    //Call generate graph
+    //Call generate graph to update global graph object with
+    //new nodes and edges us geometric graph model
     generateGraph(numNodes);
 
 
@@ -213,61 +214,153 @@ function makeGraph() {
 // @todo: modify to fit power law instead of uniform distribution
 function generateGraph(numNodes) {
 
-    //Creates list of strings specifying Node0 -> NodenumNodes
-    let graphNodes = [];
-    for(let i = 0; i < numNodes; i++) {
-        graphNodes.push('Node' + i);
-    }
+
+// var graph = {
+//     nodes: [
+//         {id:'Node0'}, {id:'Node1'}, {id:'Node2'}, {id: 'Node3'},
+//         {id:'Node4'}
+//     ],
+//     links: [
+//         {source:'Node0',target:'Node1'},
+//         {source:'Node0',target:'Node2'},
+//         {source:'Node1',target:'Node2'},
+//         {source:'Node1',target:'Node3'},
+//         {source:'Node2',target:'Node3'},
+//         {source:'Node3',target:'Node4'}
+//     ]
+// };
+
+    //Updates global graph object
 
 
-    //Start E-R
-    let edges = [];
-    let success = .2;
-
-    for (let i = 0; i < numNodes; i++) {
-        for (let j = i+1; j < numNodes; j++) {
-            if (i !== j) {
-                r = Math.random();
-
-                if (r >= success) {
-                    let edge = [graphNodes[i], graphNodes[j], 1];
-                    edges.push(edge);
-                }
-            }
-        }
-    }
-
-
-    //Modify global graph
-    let newGraph = {
-        nodes: [],
-        links: []
-    }
-
-    //Add nodes to newGraph object
+    //Creates numNodes new nodes
+    let newNodes = [];
     for (let i = 0; i < numNodes; i++) {
         //Create node object and push
-        let newNode = {id:graphNodes[i]};
-        newGraph['nodes'].push(newNode);
+        let nodeName = 'Node' + i;
+        let newNode = {id:nodeName};
+        newNodes.push(newNode);
     }
 
-    //Add links to newGraph object
-    for(let i = 0; i < edges.length; i++) {
-        //Create link object and push
-        let newLink = {source: edges[i][0], target: edges[i][1]};
-        newGraph['links'].push(newLink);
+    graph.nodes = newNodes;
+
+
+    //Now assign uniform random x,y coordinates to create Geometric graph
+
+    //Array of new positions to prevent overlap
+    let newPos = []
+
+    //Place each node randomly, ensuring no overlap
+    for (let node of graph.nodes) {
+
+        placeNode(node, newPos);
+        newPos.push(graph.pos[node.id]);
+
     }
 
 
-    //Update global adjList
-
-    // adjList = makeAdjList(edges);
 
 
 
-    return newGraph;
+    //Naive geomtric graph algorithm
+    let edges = [];
+
+    // for (let i = 0; i < numNodes; i++) {
+    //     for (let j = i+1; j < numNodes; j++) {
+
+    //         let dist = Math.sqrt(Math.pow(cords[0] - x, 2) + Math.pow(cords[1] - y, 2));
+
+
+    //         if (i !== j) {
+    //             r = Math.random();
+
+    //             if (r >= success) {
+    //                 let edge = [graphNodes[i], graphNodes[j], 1];
+    //                 edges.push(edge);
+    //             }
+    //         }
+    //     }
+    // }
+
+
+
+
+    // //Add links to newGraph object
+    // for(let i = 0; i < edges.length; i++) {
+    //     //Create link object and push
+    //     let newLink = {source: edges[i][0], target: edges[i][1]};
+    //     newGraph['links'].push(newLink);
+    // }
+
+
+
 
 }
+
+function placeNode(node, pos) {
+    //Helper function for genGraph
+    //Takes a node object and array of currently assigned positions as args
+    //Assigns coordinates to a node, preventing overlap
+
+
+    let padding = 10;
+    let width = d3.select('svg').attr('width');
+    let height = d3.select('svg').attr('height');
+
+
+
+    console.log(pos);
+
+    let nodePlaced = false;
+    while (!nodePlaced) {
+
+        //Random number between 100 and 800
+        var x = Math.floor(Math.random() * (750) ) + 50;
+
+        //Random number between 100 and 500
+        var y = Math.floor(Math.random() * (450) ) + 100;
+
+
+        //Check against all other coordinates
+        let valid = true;
+        for (let cords of pos) {
+
+            if (pos.length === 0) {
+                nodePlaced = true;
+                break;
+            }
+
+            //Ensure that distance between centers of
+            //each drawn circle is greater than 2x radius + some padding
+
+            //Pythagorean theorem
+            let dist = Math.sqrt(Math.pow(cords[0] - x, 2) + Math.pow(cords[1] - y, 2));
+
+            if (dist < (2*radius) + padding) {
+                valid = false;
+                break;
+            }
+        }
+
+        //If out of the loop and still true, then the placement is valid
+        if (valid === true) {
+            nodePlaced = true;
+        }
+
+    }
+
+
+    node.x = x;
+    node.y = y;
+    graph.pos[node.id] = [x,y];
+
+
+}
+
+
+
+
+
 
 function run() {
 //Runs Djikstras Algorithm generarting list of visited nodes in order
