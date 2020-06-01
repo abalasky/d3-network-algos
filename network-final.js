@@ -1,3 +1,4 @@
+'using strict';
 
 window.addEventListener('load', makeNetwork);
 
@@ -26,8 +27,14 @@ var adjList = {
     'Node4': {'Node3': 3}
 };
 
+//Global Default Start Node
+//@todo Allow user to change this by selecting node
+    //set start to id of selected
+var start = 'Node0'
+
 
 function makeNetwork(numVertices = 5) {
+    //Main function called on page load to render network on svg
 
     //Declare handlers
     var svg = d3.select('#network');
@@ -169,6 +176,7 @@ function ticked() {
 
 
 function makeGraph() {
+    //Called on button to reset graph with specified # of nodes
 
     var numNodes = document.querySelector('#numNodes').value
     console.log(numNodes);
@@ -177,7 +185,9 @@ function makeGraph() {
     d3.selectAll('g').remove();
 
     // //Create new graph and overwrite global
-    // graph = generateGraph(numNodes);
+
+    //Call generate graph
+    generateGraph(numNodes);
 
 
     makeNetwork();
@@ -263,50 +273,171 @@ function run() {
 //Runs Djikstras Algorithm generarting list of visited nodes in order
 //as well as list of traversed links in order
 
+    //Hard coded adjList
+    let adjList = {
+        'Node0':{'Node1': 4,'Node2': 1},
+        'Node1':{'Node0': 4, 'Node2': 2, 'Node3': 1},
+        'Node2':{'Node0':1, 'Node1': 2, 'Node3': 5},
+        'Node3':{'Node1': 1, 'Node2': 5, 'Node4': 3},
+        'Node4':{'Node3': 3}
+    }
 
-    let start = 'Node0';
+    //Creates min priority queue with tuples of the form [d(v), v]
+    let compareTuples = function(a,b) {return a[0] - b[0]};
+    let pq = new PriorityQueue({comparator: compareTuples});
 
     let visited = new Set();
     let dist = new Map();
     let pred = new Map();
+
 
     //Initialize all distances to infinity
     for (let key of Object.keys(adjList)) {
         dist.set(key, Number.MAX_VALUE);
     }
 
+
     //Initialize all preds to null
     for (let key of Object.keys(adjList)) {
         pred.set(key, null);
     }
 
+    //Set start Node to distance zero
     dist.set(start, 0);
+    pred.set(start,start);
+
+    //Lists for events
+
+    //Nodes in order visited
+    let nodeId = [];
+
+    //Links in order traversed linkIds[0] is the link used to
+    //traverse from start to nodeId[0]
+    let linkId = [];
+
+    //List of lists, at each node enumerates connection tried
+    let checking = [];
+
+
+    pq.queue([0,start]);
+    while (pq.length !== 0) {
+
+        //Get the name of shortest distance node
+        let currNode = pq.dequeue()[1];
+
+        console.log(`On ${currNode}`);
+
+
+        //Skip this iteration of the loop
+        if (visited.has(currNode)) {
+            continue;
+        }
+
+        //Add the currNode and where it come from
+        //to the event lists
+        nodeId.push(currNode);
+        let fromNode = pred.get(currNode);
+        let link = `${fromNode}-${currNode}`;
+        linkId.push(link);
+
+
+        console.log(`Traveled to ${currNode} from ${fromNode}`);
+
+        //List of neighbor checks performed from currNode
+        let checks = [];
+
+        //Check each neighbor of currNode that has not been visited
+        for (let neighbor of Object.keys(adjList[currNode])) {
+
+
+
+            if (!visited.has(neighbor)) {
+                //Check if there is a better path
+
+                console.log(`Checking ${neighbor}`);
+                checks.push(neighbor);
+
+                //if(d[v] > d[curr] + c(curr,v))
+                let newDist = dist.get(currNode) + adjList[currNode][neighbor];
+
+                if (newDist < dist.get(neighbor)) {
+                    //A shorter distance was found
+                    //Update distance, set new pred, push to PQ
+
+                    dist.set(neighbor, newDist);
+                    pred.set(neighbor, currNode);
+                    pq.queue([dist.get(neighbor), neighbor]);
+                }
+            }
+        }
+
+        //Push all check events to checking array
+        checking.push(checks);
+
+        //Mark as visited;
+        visited.add(currNode);
+
+    }
+
+    //Debug
+    console.log(nodeId);
+    console.log(linkId);
 
 
 
 
+    //***** Begin Animation ******
+    //****************************
 
-    // let nodeIds = ['Node0', 'Node1', 'Node2', 'Node3', 'Node4'];
+    console.log('Starting node is:', start);
+    d3.select('#' + nodeId[0]).transition().duration(50).attr('fill', 'yellow');
 
-    // let linkIds = ['Node0-Node2', 'Node1-Node2', 'Node1-Node3',
-    //     'Node2-Node3', 'Node3-Node4'];
+    nodeId.shift();
+    linkId.shift();
 
-    // d3.interval( function() {
-    //     console.log('Changing node');
+    console.log('After first shift:')
+    console.log(nodeId);
+    console.log(linkId);
 
-    //     d3.select('#' + nodeIds[0]).transition().duration(1000).attr('fill', 'red');
-    //     d3.select('#' + linkIds[0]).transition().duration(1000).attr('stroke', 'red');
 
-    //     //Pop front
-    //     nodeIds.shift();
-    //     linkIds.shift();
+    let iters = nodeId.length;
 
-    // }, 1000);
+    let interval = d3.interval( function() {
+
+        if (iters === 0) {
+            interval.stop();
+            return;
+        }
+
+        console.log('Traversing to', nodeId[0], 'using edge', linkId[0]);
+
+        d3.select('#' + linkId[0]).transition().duration(5000).attr('stroke', 'green');
+        d3.select('#' + nodeId[0]).transition().duration(5000).attr('fill', 'blue');
+
+        //Pop front
+        nodeId.shift();
+        linkId.shift();
+
+        iters -= 1;
+
+
+    }, 1000);
+
+
 
 
 
 
 }
+
+function flipLinks(links) {
+
+
+    for (let link of links) {
+        nodeA[nodeA.length-1] > nodeB[nodeB.length-1]
+    }
+}
+
 
 
 
