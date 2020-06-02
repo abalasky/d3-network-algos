@@ -181,7 +181,7 @@ function makeGraph() {
     //Called on button to reset graph with specified # of nodes
 
     var numNodes = document.querySelector('#numNodes').value
-    console.log(numNodes);
+
 
 
     d3.selectAll('g').remove();
@@ -300,6 +300,10 @@ function genGeomGraph(numNodes, r) {
     }
 
     graph.links = newLinks;
+
+
+    //Update global adj list using edge list
+    makeAdjList(edges);
 
 
 }
@@ -492,10 +496,6 @@ function run() {
 
     }
 
-    //Debug
-    console.log(nodeId);
-    console.log(linkId);
-
 
 
 
@@ -515,11 +515,18 @@ function run() {
 
     //Flip all the links to be smallest to largest so they line up with svg id's
     linkId = linkId.map(function(item, index, aray) {
-        let nodeA = item.slice(0,5);
-        let nodeB = item.slice(6);
+        let nodeTuple = item.split('-');
+        let nodeA = nodeTuple[0];
+        let nodeB = nodeTuple[1];
 
 
-        if (nodeA[nodeA.length - 1] > nodeB[nodeB.length -1]) {
+
+        //Regex to extract number from e.g. 'Node3243'
+        let numA = nodeA.match(/\d+/g).map(Number);
+        let numB = nodeB.match(/\d+/g).map(Number);
+
+
+        if (numA[0] > numB[0]) {
             let reversed = nodeB + '-' + nodeA;
             return reversed;
         }
@@ -577,7 +584,39 @@ function flipLinks(links) {
 function makeAdjList(edges) {
 ///Turns edges into adjList, updates global adjList, called from
 //generateGraph
+// var adjList = {
+//     'Node0': {'Node1': 4, 'Node2': 1},
+//     'Node1': {'Node0': 4, 'Node2': 2, 'Node3': 1},
+//     'Node2': {'Node0': 1, 'Node1': 2, 'Node3': 5},
+//     'Node3': {'Node1': 1, 'Node2': 5, 'Node4': 3},
+//     'Node4': {'Node3': 3}
+// };
 
+    let newAdjList = {};
+
+    //Initialize keys
+    for(let node of Object.keys(graph.pos)) {
+        //Create an entry for each node
+        newAdjList[node] = {};
+    }
+
+
+
+    for(let edge of edges) {
+        let start = edge[0];
+        let end = edge[1];
+        let weight = edge[2];
+
+        //Add end to starts list
+        newAdjList[start][end] = weight;
+
+        //Add start to ends list
+        newAdjList[end][start] = weight;
+
+    }
+
+
+    adjList = newAdjList;
 }
 
 
