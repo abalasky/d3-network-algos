@@ -46,6 +46,8 @@ var start = 'Node0'
 var radius = 10;
 
 
+
+
 function makeNetwork(numVertices = 5) {
     //Main function called on page load to render network on svg
 
@@ -116,7 +118,7 @@ function makeNetwork(numVertices = 5) {
 
     //apply drag_handler to our circles
     drag_handler(d3.select('.nodes').selectAll('circle'));
-    coordsPixels('svg');
+    // coordsPixels('svg');
 
 
 }
@@ -188,7 +190,7 @@ function makeGraph() {
 
     //Call generate graph to update global graph object with
     //new nodes and edges us geometric graph model
-    generateGraph(numNodes);
+    genGeomGraph(numNodes, 120);
 
 
     makeNetwork();
@@ -212,7 +214,7 @@ function makeGraph() {
 // @returns list of edges with weights defaulted to 1
 
 // @todo: modify to fit power law instead of uniform distribution
-function generateGraph(numNodes) {
+function genGeomGraph(numNodes, r) {
 
 
 // var graph = {
@@ -259,40 +261,61 @@ function generateGraph(numNodes) {
     }
 
 
-
-
-
     //Naive geomtric graph algorithm
     let edges = [];
+    let nodes = Object.keys(graph.pos);
 
-    // for (let i = 0; i < numNodes; i++) {
-    //     for (let j = i+1; j < numNodes; j++) {
+    for (let i = 0; i < numNodes; i++) {
+        let nodeA = nodes[i];
 
-    //         let dist = Math.sqrt(Math.pow(cords[0] - x, 2) + Math.pow(cords[1] - y, 2));
+        for (let j = i+1; j < numNodes; j++) {
+            let nodeB = nodes[j];
 
+            //Calculate distance between nodeA and nodeB
+            let dist = Math.sqrt(Math.pow(graph.pos[nodeA][0] - graph.pos[nodeB][0], 2)
+                + Math.pow(graph.pos[nodeA][1] - graph.pos[nodeB][1], 2));
 
-    //         if (i !== j) {
-    //             r = Math.random();
+            if (i !== j) {
 
-    //             if (r >= success) {
-    //                 let edge = [graphNodes[i], graphNodes[j], 1];
-    //                 edges.push(edge);
-    //             }
-    //         }
-    //     }
-    // }
+                if (dist < r) {
 
+                    let etx = calcETX(dist);
 
-
-
-    // //Add links to newGraph object
-    // for(let i = 0; i < edges.length; i++) {
-    //     //Create link object and push
-    //     let newLink = {source: edges[i][0], target: edges[i][1]};
-    //     newGraph['links'].push(newLink);
-    // }
+                    let edge = [nodeA, nodeB, etx];
+                    edges.push(edge);
+                }
+            }
+        }
+    }
 
 
+
+
+    //Update links using the generated edges list
+    let newLinks = [];
+    for(let i = 0; i < edges.length; i++) {
+        //Create link object and push
+        let newLink = {source: edges[i][0], target: edges[i][1]};
+        newLinks.push(newLink);
+    }
+
+    graph.links = newLinks;
+
+
+}
+
+function calcETX(dist, a = .25, b = 20) {
+    //Helper function to assign weight of edge using ETX method
+    //ETX = 1 / success probability
+    //1 - [exp ( a(x - b) ) / (exp (a (x - b))+1)],
+    // try a = 0.25 and b = 20
+
+    let prob = 1 - [ ( Math.exp( a * (dist - b)) ) /
+        ( Math.exp( a * (dist - b)) + 1) ];
+
+
+
+    return 1/prob;
 
 
 }
@@ -307,9 +330,6 @@ function placeNode(node, pos) {
     let width = d3.select('svg').attr('width');
     let height = d3.select('svg').attr('height');
 
-
-
-    console.log(pos);
 
     let nodePlaced = false;
     while (!nodePlaced) {
@@ -366,14 +386,14 @@ function run() {
 //Runs Djikstras Algorithm generarting list of visited nodes in order
 //as well as list of traversed links in order
 
-    //Hard coded adjList
-    let adjList = {
-        'Node0':{'Node1': 4,'Node2': 1},
-        'Node1':{'Node0': 4, 'Node2': 2, 'Node3': 1},
-        'Node2':{'Node0':1, 'Node1': 2, 'Node3': 5},
-        'Node3':{'Node1': 1, 'Node2': 5, 'Node4': 3},
-        'Node4':{'Node3': 3}
-    }
+    // //Hard coded adjList
+    // let adjList = {
+    //     'Node0':{'Node1': 4,'Node2': 1},
+    //     'Node1':{'Node0': 4, 'Node2': 2, 'Node3': 1},
+    //     'Node2':{'Node0':1, 'Node1': 2, 'Node3': 5},
+    //     'Node3':{'Node1': 1, 'Node2': 5, 'Node4': 3},
+    //     'Node4':{'Node3': 3}
+    // }
 
     //Creates min priority queue with tuples of the form [d(v), v]
     let compareTuples = function(a,b) {return a[0] - b[0]};
@@ -482,15 +502,35 @@ function run() {
     //***** Begin Animation ******
     //****************************
 
+
+    //Highlights start and gets rid of starting events from DJ
     console.log('Starting node is:', start);
     d3.select('#' + nodeId[0]).transition().duration(50).attr('fill', 'yellow');
-
     nodeId.shift();
     linkId.shift();
 
-    console.log('After first shift:')
-    console.log(nodeId);
+
+    console.log('Before');
     console.log(linkId);
+
+    //Flip all the links to be smallest to largest so they line up with svg id's
+    linkId = linkId.map(function(item, index, aray) {
+        let nodeA = item.slice(0,5);
+        let nodeB = item.slice(6);
+
+
+        if (nodeA[nodeA.length - 1] > nodeB[nodeB.length -1]) {
+            let reversed = nodeB + '-' + nodeA;
+            return reversed;
+        }
+
+        return item;
+    });
+
+    console.log('After');
+    console.log(linkId);
+
+
 
 
     let iters = nodeId.length;
@@ -504,8 +544,8 @@ function run() {
 
         console.log('Traversing to', nodeId[0], 'using edge', linkId[0]);
 
-        d3.select('#' + linkId[0]).transition().duration(5000).attr('stroke', 'green');
-        d3.select('#' + nodeId[0]).transition().duration(5000).attr('fill', 'blue');
+        d3.select('#' + linkId[0]).transition().duration(2500).attr('stroke', 'yellow');
+        d3.select('#' + nodeId[0]).transition().duration(2600).attr('fill', 'blue');
 
         //Pop front
         nodeId.shift();
@@ -524,7 +564,7 @@ function run() {
 }
 
 function flipLinks(links) {
-
+//Helper function to flip link to align with svg id
 
     for (let link of links) {
         nodeA[nodeA.length-1] > nodeB[nodeB.length-1]
