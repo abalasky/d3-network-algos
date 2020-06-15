@@ -45,7 +45,11 @@ var start = 'Node0'
 //Global radius for nodes
 var radius = 10;
 
+//Global reset to interrupt DJ
+var resetClicked = false;
 
+//**********Viz Functions*********
+//********************************
 
 
 function makeNetwork(numVertices = 5) {
@@ -60,7 +64,7 @@ function makeNetwork(numVertices = 5) {
 
     //Create SVG groups for links and nodes
     linksG = svg.append('g').attr('class', 'links');
-    nodesG = svg.append('g').attr('class', 'nodes');
+    nodesG = svg.append('g').attr('class', 'nodes'); //Nodes over links
 
     //Assign pos to actual node objects for drawing
     let counter = 0;
@@ -71,20 +75,15 @@ function makeNetwork(numVertices = 5) {
         node.y = graph.pos[node.id][1];
 
         counter += 1;
-
     }
 
 
-    var svg = d3.select('svg');
+    //Draw and associate nodes
+    let node = d3.select('.nodes').selectAll('circle').data(graph.nodes).enter()
+        .append('g')
+            .attr('class', 'node')
 
-    svg.append('g').attr('class', 'links');
-
-    svg.append('g').attr('class', 'nodes');
-
-
-
-
-    d3.select('.nodes').selectAll('circle').data(graph.nodes).enter().append('circle')
+    node.append('circle')
         .attr('id', (d) => {return d['name']})
         .attr('r',radius).attr('fill', "red")
         .attr('cx', (d) => d.x)
@@ -92,7 +91,12 @@ function makeNetwork(numVertices = 5) {
         .attr("id", (d) => d['id'])
 
 
-    d3.select('.links').selectAll('line').data(graph.links).enter().append('line')
+    //Draw and associate links
+    let link = d3.select('.links').selectAll('line').data(graph.links).enter()
+        .append('g')
+            .attr('class', 'link');
+
+    link.append('line')
         .attr('stroke-width',2)
         .attr('stroke', 'black')
         .attr("x1", (d) => graph.pos[d.source][0])
@@ -101,28 +105,86 @@ function makeNetwork(numVertices = 5) {
         .attr("y2", (d) => graph.pos[d.target][1])
         .attr('id', (d) => d.source + '-' + d.target);
 
+    //Add labels to nodes
+    node.append('text')
+        .text((d) => d.id)
+        .attr('x', (d) => d.x)
+        .attr('y', (d) => d.y);
+
+    //Add labels to links at the midpoint
+    link.append('text')
+        .text( (d) => d.source + '-' + d.target)
+        .attr('x', (d) => (graph.pos[d.source][0] + graph.pos[d.target][0])/2)
+        .attr('y', (d) => (graph.pos[d.source][1] + graph.pos[d.target][1]) /2);
 
 
-    //Register Listeners
+    //Register Event Listeners
     d3.select('#start-btn').on('click',run);
     d3.select('#reset-btn').on('click',makeGraph)
+    d3.selectAll('.node').on('click', selectStart)
+    d3.select('#clear-btn').on('click',reset);
 
-
+    //Create D3 drag handler for nodes/links
     var drag_handler = d3.drag()
         .on('drag', function (d) {
             d3.select(this)
             .attr('cx', d.x = d3.event.x)
             .attr('cy', d.y = d3.event.y);
-        });
+
+            //Update underlying data of links (graph.pos)
+            graph.pos[d.id][0] = d3.event.x;
+            graph.pos[d.id][1] = d3.event.y;
 
 
-    //apply drag_handler to our circles
+
+            //Initiate update pattern for links
+            let link = d3.select('.links').selectAll('line').data(graph.links);
+            link.exit().remove();
+            link.enter().append('line')
+                .attr('stroke-width',2)
+                .attr('stroke', 'black')
+                .merge(link)
+                    .attr("x1", (d) => graph.pos[d.source][0])
+                    .attr("y1", (d) => graph.pos[d.source][1])
+                    .attr("x2", (d) => graph.pos[d.target][0])
+                    .attr("y2", (d) => graph.pos[d.target][1])
+                    .attr('id', (d) => d.source + '-' + d.target);
+    });
+
+
+
+    //Apply drag_handler to all circles
     drag_handler(d3.select('.nodes').selectAll('circle'));
+
     // coordsPixels('svg');
 
 
 }
 
+//Alows user to select start node for algorithm
+function selectStart(d) {
+
+    //Change prev start back to red
+    d3.select('#' + start).attr('fill','red');
+
+    //Update start
+    start = d.id;
+
+    //Change to yellow
+    d3.select('#' + d.id).attr('fill', 'yellow');
+
+    console.log("New start is", start);
+}
+
+//Clears current graph allowing djikstra to be run again
+function reset() {
+
+    //Breaks DJ anim
+    resetClicked = true;
+
+    d3.selectAll('g').remove();
+    makeNetwork();
+}
 
 
 //Continuosly displays in text the coords of your mouse w crosshair
@@ -161,26 +223,11 @@ function drawLinks() {
         .attr('stroke','black');
 }
 
-function ticked() {
-
-    nodesG.selectAll('circle')
-        .attr('cx', d=>d.x)
-        .attr('cy', d=>d.y)
-
-    linksG.selectAll('line')
-        .attr("x1", (d) => d.source.x)
-        .attr("y1", function(d) { return d.source.y; })
-        .attr("x2", function(d) { return d.target.x; })
-        .attr("y2", function(d) { return d.target.y; })
-        .attr('id', (d) => d.source.id + '-' + d.target.id);
-
-}
-
 
 function makeGraph() {
     //Called on button to reset graph with specified # of nodes
 
-    var numNodes = document.querySelector('#numNodes').value
+    var numNodes = document.querySelector('#numNodes').value;
 
 
 
@@ -314,9 +361,10 @@ function calcETX(dist, a = .25, b = 20) {
     //1 - [exp ( a(x - b) ) / (exp (a (x - b))+1)],
     // try a = 0.25 and b = 20
 
-    let prob = 1 - [ ( Math.exp( a * (dist - b)) ) /
-        ( Math.exp( a * (dist - b)) + 1) ];
+    let prob = 1 - (Math.exp(a * (dist - b))) /
+        (Math.exp(a * (dist - b)) + 1);
 
+    console.log(dist, prob);
 
 
     return 1/prob;
@@ -544,8 +592,9 @@ function run() {
 
     let interval = d3.interval( function() {
 
-        if (iters === 0) {
+        if (iters === 0 || resetClicked) {
             interval.stop();
+            resetClicked = false;
             return;
         }
 

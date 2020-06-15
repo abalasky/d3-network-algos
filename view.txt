@@ -1,39 +1,42 @@
-Traversing to Node37 using edge Node0-Node37
-network-final.js:554 Traversing to Node17 using edge Node0-Node17
-network-final.js:554 Traversing to Node12 using edge Node12-Node37
-network-final.js:554 Traversing to Node36 using edge Node12-Node36
-network-final.js:554 Traversing to Node41 using edge Node36-Node41
-network-final.js:554 Traversing to Node3 using edge Node3-Node41
-network-final.js:554 Traversing to Node25 using edge Node25-Node3
-network-final.js:554 Traversing to Node4 using edge Node17-Node4
-network-final.js:554 Traversing to Node38 using edge Node25-Node38
-network-final.js:554 Traversing to Node28 using edge Node28-Node38
-network-final.js:554 Traversing to Node18 using edge Node18-Node28
-network-final.js:554 Traversing to Node6 using edge Node18-Node6
-network-final.js:554 Traversing to Node9 using edge Node6-Node9
-network-final.js:554 Traversing to Node11 using edge Node11-Node3
-network-final.js:554 Traversing to Node33 using edge Node11-Node33
-network-final.js:554 Traversing to Node31 using edge Node31-Node33
-network-final.js:554 Traversing to Node2 using edge Node2-Node31
-network-final.js:554 Traversing to Node20 using edge Node20-Node4
-network-final.js:554 Traversing to Node34 using edge Node20-Node34
-network-final.js:554 Traversing to Node5 using edge Node34-Node5
-network-final.js:554 Traversing to Node24 using edge Node24-Node5
-network-final.js:554 Traversing to Node30 using edge Node24-Node30
-network-final.js:554 Traversing to Node16 using edge Node16-Node24
-network-final.js:554 Traversing to Node39 using edge Node16-Node39
-network-final.js:554 Traversing to Node13 using edge Node13-Node30
-network-final.js:554 Traversing to Node27 using edge Node13-Node27
-network-final.js:554 Traversing to Node7 using edge Node39-Node7
-network-final.js:554 Traversing to Node15 using edge Node15-Node39
-network-final.js:554 Traversing to Node14 using edge Node14-Node15
-network-final.js:554 Traversing to Node1 using edge Node1-Node15
-network-final.js:554 Traversing to Node19 using edge Node19-Node28
-network-final.js:554 Traversing to Node10 using edge Node10-Node36
-network-final.js:554 Traversing to Node26 using edge Node10-Node26
-network-final.js:554 Traversing to Node22 using edge Node22-Node26
-network-final.js:554 Traversing to Node35 using edge Node22-Node35
-network-final.js:554 Traversing to Node21 using edge Node21-Node35
-network-final.js:554 Traversing to Node23 using edge Node23-Node35
-network-final.js:554 Traversing to Node32 using edge Node23-Node32
-network-final.js:554 Traversing to Node8 using edge Node23-Node8
+{id: "Node0", x: 799, y: 197}
+{id: "Node1", x: 751, y: 197}
+{id: "Node2", x: 361, y: 378}
+{id: "Node3", x: 646, y: 128}
+{id: "Node4", x: 564, y: 197}
+{id: "Node5", x: 110, y: 535}
+{id: "Node6", x: 380, y: 336}
+7: {id: "Node7", x: 282, y: 394}
+8: {id: "Node8", x: 242, y: 535}
+9: {id: "Node9", x: 292, y: 444}
+10: {id: "Node10", x: 605, y: 366}
+11: {id: "Node11", x: 123, y: 304}
+12: {id: "Node12", x: 85, y: 149}
+13: {id: "Node13", x: 352, y: 142}
+14: {id: "Node14", x: 492, y: 366}
+15: {id: "Node15", x: 684, y: 421}
+16: {id: "Node16", x: 87, y: 362}
+17: {id: "Node17", x: 647, y: 285}
+18: {id: "Node18", x: 556, y: 363}
+19: {id: "Node19", x: 136, y: 409}
+20: {id: "Node20", x: 150, y: 123}
+21: {id: "Node21", x: 690, y: 503}
+22: {id: "Node22", x: 95, y: 220}
+23: {id: "Node23", x: 630, y: 542}
+24: {id: "Node24", x: 260, y: 248}
+25: {id: "Node25", x: 538, y: 175}
+26: {id: "Node26", x: 162, y: 210}
+27: {id: "Node27", x: 355, y: 503}
+28: {id: "Node28", x: 100, y: 260}
+29: {id: "Node29", x: 318, y: 422}
+30: {id: "Node30", x: 618, y: 442}
+31: {id: "Node31", x: 209, y: 139}
+32: {id: "Node32", x: 236, y: 166}
+33: {id: "Node33", x: 340, y: 276}
+34: {id: "Node34", x: 582, y: 169}
+35: {id: "Node35", x: 583, y: 422}
+36: {id: "Node36", x: 596, y: 282}
+37: {id: "Node37", x: 757, y: 129}
+38: {id: "Node38", x: 381, y: 159}
+39: {id: "Node39", x: 788, y: 242}
+40: {id: "Node40", x: 121, y: 461}
+41: {id: "Node41", x: 572, y: 138}

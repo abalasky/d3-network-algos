@@ -115,3 +115,37 @@ line.link {
   fill: none;
   stroke-width: 1.5px;
 }
+
+
+/*My CSS additions
+************************/
+
+text {
+  display: none;
+  font: 10px sans-serif;
+}
+
+.node:hover circle {
+  fill: yellow;
+}
+
+.node:hover text {
+  display: inline;
+}
+
+.link:hover text {
+  display: inline;
+}
+
+#example-number-input {
+    margin-top:15px;
+}
+
+#start-sim {
+    text-align: center;
+}
+
+#reset-sim {
+  color: white;
+  text-align: center;
+}
