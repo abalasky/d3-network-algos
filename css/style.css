@@ -120,7 +120,12 @@ line.link {
 /*My CSS additions
 ************************/
 
-text {
+.node text {
+  display: none;
+  font: 10px sans-serif;
+}
+
+.link text {
   display: none;
   font: 10px sans-serif;
 }
@@ -149,3 +154,31 @@ text {
   color: white;
   text-align: center;
 }
+
+
+.slider {
+  padding-right: 50px;
+  float: left;
+}
+
+label {
+  float: left;
+  text-align: center;
+  font-size: 1.2rem;
+  padding-left: 100px;
+}
+
+.valuelab {
+  font-size: 1rem;
+  font-weight: 900;
+  padding-left:100px;
+}
+
+.value {
+  padding-left:30px;
+}
+
+
+
+
+

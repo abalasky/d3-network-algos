@@ -1,78 +1,153 @@
 <!DOCTYPE html>
 <html>
-<head>
+    <head>
+        <title>Network Algorithms</title>
+        <!-- Boostrap CDN -->
+        <link
+            rel="stylesheet"
+            href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css"
+            integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk"
+            crossorigin="anonymous"
+        />
 
+        <link rel="stylesheet" type="text/css" href="css/style.css" />
 
-    <title>Network Algorithms</title>
-    <!-- Boostrap CDN -->
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css" integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
+        <!-- D3 CDN -->
+        <script src="https://d3js.org/d3.v5.min.js"></script>
 
-    <link rel="stylesheet" type="text/css" href="css/style.css">
+        <!-- Priority Queue Include  -->
+        <script src="priority-queue.js"></script>
 
+        <!-- Plotly CDN -->
+        <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 
-    <!-- D3 CDN -->
-    <script src="https://d3js.org/d3.v5.min.js"></script>
+        <!-- My D3 Script -->
+        <script type="text/javascript" src="network-final.js"></script>
+    </head>
+    <body>
+        <div id="container" class="container">
+            <header>
+                <h1>Network Algorithms</h1>
+                <p></p>
+                <p></p>
+            </header>
 
-    <!-- Priority Queue Include  -->
-    <script src="priority-queue.js"></script>
+            <div id="song_selection" class="control">
+                <h3>Algorithm</h3>
+                <select id="song_select">
+                    <option value="call_me_al.json">Djikstra</option>
+                    <option value="sledgehammer_2_rounds.json"
+                        >Flloyd Warshall</option
+                    >
+                    <option value="poker_face.json">Bellman-Ford</option>
+                </select>
+            </div>
 
-    <!-- My D3 Script -->
-    <script type="text/javascript" src='network-final.js'></script>
+            <div id="controls">
+                <div id="node-number" class="control">
+                    <h4>Node Number</h4>
+                    <input
+                        class="form-control"
+                        type="number"
+                        value="42"
+                        id="numNodes"
+                    />
+                </div>
+                <div id="layouts" class="control">
+                    <h4 id="start-sim">Generate-Graph</h4>
+                    <button
+                        type="button"
+                        class="btn btn-danger btn-lg btn-block"
+                        id="reset-btn"
+                    >
+                        Make
+                    </button>
+                </div>
+                <div id="layouts" class="control">
+                    <h4 id="start-sim">Start-Algorithm</h4>
+                    <button
+                        type="button"
+                        class="btn btn-success btn-lg btn-block"
+                        id="start-btn"
+                    >
+                        Run
+                    </button>
+                </div>
+                <div id="layouts" class="control">
+                    <h4 id="reset-sim">Reset</h4>
+                    <button
+                        type="button"
+                        class="btn btn-warning btn-lg btn-block"
+                        id="clear-btn"
+                    >
+                        Reset
+                    </button>
+                </div>
+            </div>
+            <div class="sliders">
+                <div class="slider">
+                    <label for="customRange1">ETX-A</label>
+                    <input
+                        type="range"
+                        min="0"
+                        max=".1"
+                        value=".1"
+                        step=".001"
+                        class="custom-range"
+                        id="sliderA"
+                    />
+                    <div class="value">
+                        <label class="valuelab" id="alab">.05</label>
+                    </div>
+                </div>
+                <div class="slider">
+                    <label for="customRange2">ETX-B</label>
+                    <input
+                        type="range"
+                        min="85"
+                        max="200"
+                        value="85"
+                        step="1"
+                        class="custom-range"
+                        id="sliderB"
+                    />
+                    <div class="value">
+                        <label class="valuelab" id="blab">85</label>
+                    </div>
+                </div>
+            </div>
 
-</head>
-<body>
+            <div>
+                <svg
+                    id="network"
+                    width="900"
+                    height="600"
+                    style="background: lightgrey;"
+                ></svg>
+            </div>
 
-    <div id="container" class="container">
+            <div id='etxhist' style="width:800px;height:400px;">
 
-        <header>
-        <h1>Network Algorithms</h1>
-        <p><p>
-        </header>
-
-        <div id="song_selection" class="control">
-            <h3>Algorithm</h3>
-            <select id="song_select">
-              <option value="call_me_al.json">Djikstra</option>
-              <option value="sledgehammer_2_rounds.json">Flloyd Warshall</option>
-              <option value="poker_face.json">Bellman-Ford</option>
-            </select>
+            </div>
 
         </div>
+        <!--! end of #container -->
 
-        <div id="controls">
-            <div id="node-number" class="control">
-                <h4>Node Number</h4>
-                <input class="form-control" type="number" value="42" id="numNodes">
-            </div>
-            <div id="layouts" class="control">
-                <h4 id='start-sim'>Generate-Graph</h4>
-                <button type = 'button' class = 'btn btn-danger btn-lg btn-block' id='reset-btn'>Make</button>
-            </div>
-            <div id="layouts" class="control">
-                <h4 id='start-sim'>Start-Algorithm</h4>
-                <button type = 'button' class = 'btn btn-success btn-lg btn-block' id='start-btn'>Run</button>
-            </div>
-            <div id="layouts" class="control">
-                <h4 id='reset-sim'>Reset</h4>
-                <button type = 'button' class = 'btn btn-warning btn-lg btn-block'
-                id='clear-btn'>Reset</button>
-            </div>
-
-        </div>
-
-        <div>
-            <svg id='network' width='900' height='600' style='background:lightgrey'></svg>
-        </div>
-
-    </div> <!--! end of #container -->
-
-
-
-<!-- JS, Popper.js, and jQuery for Boostrap -->
-<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
-<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js" integrity="sha384-OgVRvuATP1z7JjHLkuOU7Xw704+h835Lr+6QL9UvYjZE3Ipu6Tp75j7Bh/kR0JKI" crossorigin="anonymous"></script>
-
-
-</body>
+        <!-- JS, Popper.js, and jQuery for Boostrap -->
+        <script
+            src="https://code.jquery.com/jquery-3.5.1.slim.min.js"
+            integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj"
+            crossorigin="anonymous"
+        ></script>
+        <script
+            src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"
+            integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo"
+            crossorigin="anonymous"
+        ></script>
+        <script
+            src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js"
+            integrity="sha384-OgVRvuATP1z7JjHLkuOU7Xw704+h835Lr+6QL9UvYjZE3Ipu6Tp75j7Bh/kR0JKI"
+            crossorigin="anonymous"
+        ></script>
+    </body>
 </html>
