@@ -37,6 +37,10 @@ let adjList = {
      Node4: { Node3: 3 },
 };
 
+//Global Path values
+let etxPathVals = {}
+
+
 //Global Default Start Node
 //@todo Allow user to change this by selecting node
 //set start to id of selected
@@ -489,6 +493,9 @@ function run() {
      //Find path sums for all nodes
      let totalETX = calcETXPaths(pred);
 
+     //Set global etxpathvals
+     update_labels(totalETX);
+
      //Populate Histogram & Add Labels to Nodes
      create_histogram(totalETX);
 
@@ -552,6 +559,24 @@ function run() {
           iters -= 1;
      }, 1000);
 }
+
+//Called when ETX paths are calculated
+//updates labels of nodes to show ETX path to node
+function update_labels(totalETX) {
+
+     let node = d3.selectAll('.node');
+
+     console.log(node);
+
+     //Reset labels
+     node.selectAll("text").remove();
+
+     node.append("text")
+          .text((d) => totalETX[d.id].toFixed(2))
+          .attr("x", (d) => d.x)
+          .attr("y", (d) => d.y);
+}
+
 
 //Calculates Total ETX of path from start to each Node
 //used for histogram and labeling after conclusion of animation
