@@ -215,12 +215,35 @@ function makeNetwork(numVertices = 5) {
           //           "y",
           //           (d) => (graph.pos[d.source][1] + graph.pos[d.target][1]) / 2
           //      );
+     }).on("end", function (d) {
+          node.append("text")
+               .text((d) => d.id)
+               .attr("x", (d) => d.x)
+               .attr("y", (d) => d.y);
+
+          let link = d3.selectAll(".link")
+          link.append("text")
+               .text((d) => {
+                    if(adjList[d.source][d.target]) {
+                         return adjList[d.source][d.target].toFixed(2);
+                    }
+               })
+               .attr(
+                    "x",
+                    (d) => (1/2) * (graph.pos[d.source][0] + graph.pos[d.target][0])
+               )
+               .attr(
+                    "y",
+                    (d) => (1/2) * (graph.pos[d.source][1] + graph.pos[d.target][1])
+               );
      });
+
+
 
      //Apply drag_handler to all circles
      drag_handler(d3.select(".nodes").selectAll("circle"));
 
-     // coordsPixels('svg');
+
 }
 
 //Checks distance of all links associated with
@@ -268,6 +291,7 @@ function check_links(movedNode) {
           let edge = [nodeA, nodeB, etx];
           edges.push(edge);
      }
+
      makeAdjList(edges);
 
 }
@@ -608,7 +632,7 @@ function run() {
                return;
           }
 
-        //   console.log("Traversing to", nodeId[0], "using edge", linkId[0]);
+          console.log("Traversing to", nodeId[0], "using edge", linkId[0]);
 
           d3.select("#" + linkId[0])
                .transition()
