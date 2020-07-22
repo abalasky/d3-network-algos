@@ -426,10 +426,10 @@ function placeNode(node, pos) {
      let nodePlaced = false;
      while (!nodePlaced) {
           //Random number between 100 and 800
-          var x = Math.floor(Math.random() * 750) + 50;
+          var x = Math.floor(Math.random() * (width - 150)) + 50;
 
           //Random number between 100 and 500
-          var y = Math.floor(Math.random() * 450) + 100;
+          var y = Math.floor(Math.random() * (height-150)) + 100;
 
           //Check against all other coordinates
           let valid = true;
