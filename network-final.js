@@ -217,7 +217,7 @@ function makeNetwork(numVertices = 5) {
           //      );
      }).on("end", function (d) {
           node.append("text")
-               .text((d) => d.id)
+               .text((d) => etxPathVals[d.id].toFixed(2))
                .attr("x", (d) => d.x)
                .attr("y", (d) => d.y);
 
@@ -584,8 +584,9 @@ function run() {
      //Find path sums for all nodes
      let totalETX = calcETXPaths(pred);
 
+     etxPathVals = totalETX;
      //Set global etxpathvals
-     update_labels(totalETX);
+     update_labels();
 
      //Populate Histogram & Add Labels to Nodes
      create_histogram(totalETX);
@@ -653,7 +654,7 @@ function run() {
 
 //Called when ETX paths are calculated
 //updates labels of nodes to show ETX path to node
-function update_labels(totalETX) {
+function update_labels(totalETX = etxPathVals) {
 
      let node = d3.selectAll('.node');
 

@@ -122,12 +122,14 @@ line.link {
 
 .node text {
   display: none;
-  font: 10px sans-serif;
+  font: 18px sans-serif;
+  color: lightskyblue;
 }
 
 .link text {
   display: none;
-  font: 10px sans-serif;
+  font: 18px sans-serif;
+  color: lightblue;
 }
 
 .node:hover circle {
