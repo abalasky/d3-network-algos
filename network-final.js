@@ -52,6 +52,9 @@ let radius = 10;
 //Global reset to interrupt DJ
 let resetClicked = false;
 
+let svgWidth = 900;
+let svgHeight = 600;
+
 //**********Viz Functions*********
 //********************************
 
@@ -68,6 +71,7 @@ function init() {
      //Event listeners for slidersd
      let sliderA = document.getElementById("sliderA");
      let sliderB = document.getElementById("sliderB");
+     let sliderSVG = document.getElementById("sliderSVG");
 
      sliderA.oninput = function () {
           document.querySelector("#alab").innerHTML = this.value;
@@ -75,6 +79,13 @@ function init() {
 
      sliderB.oninput = function () {
           document.querySelector("#blab").innerHTML = this.value;
+     };
+
+     sliderSVG.oninput = function () {
+          document.querySelector("#svglab").innerHTML = this.value + "%";
+          document.querySelector('#network').setAttribute("width",svgWidth * (this.value/100) );
+
+          document.querySelector("#network").setAttribute("height",svgHeight * (this.value/100));
      };
 
      //Draw the SVG graph
@@ -147,7 +158,7 @@ function makeNetwork(numVertices = 5) {
 
      //Add labels to links at the midpoint
      link.append("text")
-          .text((d) => d.source + "-" + d.target)
+          .text((d) => adjList[d.source][d.target].toFixed(2))
           .attr(
                "x",
                (d) => (graph.pos[d.source][0] + graph.pos[d.target][0]) / 2
@@ -167,6 +178,10 @@ function makeNetwork(numVertices = 5) {
           graph.pos[d.id][0] = d3.event.x;
           graph.pos[d.id][1] = d3.event.y;
 
+          //Before redrawing links, remove those that no
+          //longer correspond to geometric graph parameters
+          check_links(d.id);
+
           //Initiate update pattern for links
           let link = d3.select(".links").selectAll("line").data(graph.links);
           link.exit().remove();
@@ -181,25 +196,25 @@ function makeNetwork(numVertices = 5) {
                .attr("y2", (d) => graph.pos[d.target][1])
                .attr("id", (d) => d.source + "-" + d.target);
 
-          //Reset labels
+          //Reset labels - remove, then reappend
           node.selectAll("text").remove();
-          link.selectAll("text").remove();
+          d3.selectAll(".link").selectAll("text").remove();
 
-          node.append("text")
-               .text((d) => d.id)
-               .attr("x", (d) => d.x)
-               .attr("y", (d) => d.y);
+          // node.append("text")
+          //      .text((d) => d.id)
+          //      .attr("x", (d) => d.x)
+          //      .attr("y", (d) => d.y);
 
-          link.append("text")
-               .text((d) => d.source + "-" + d.target)
-               .attr(
-                    "x",
-                    (d) => (graph.pos[d.source][0] + graph.pos[d.target][0]) / 2
-               )
-               .attr(
-                    "y",
-                    (d) => (graph.pos[d.source][1] + graph.pos[d.target][1]) / 2
-               );
+          // d3.selectAll(".link").append("text")
+          //      .text((d) => adjList[d.source][d.target].toFixed(2))
+          //      .attr(
+          //           "x",
+          //           (d) => (graph.pos[d.source][0] + graph.pos[d.target][0]) / 2
+          //      )
+          //      .attr(
+          //           "y",
+          //           (d) => (graph.pos[d.source][1] + graph.pos[d.target][1]) / 2
+          //      );
      });
 
      //Apply drag_handler to all circles
@@ -207,6 +222,56 @@ function makeNetwork(numVertices = 5) {
 
      // coordsPixels('svg');
 }
+
+//Checks distance of all links associated with
+//moved node to and removes those that are above
+//geometric threshold and adds those that are
+//within geometric threshold, updates ETX values too
+function check_links(movedNode) {
+     r = 120; //geometric graph paramter (hard coded)
+     //Calculate distance between nodeA and nodeB
+
+     //Filter all links that are within the geom threshold
+     graph.links = graph.links.filter((currentValue) => {
+          let nodeA = currentValue.source;
+          let nodeB = currentValue.target;
+          let dist = Math.sqrt( Math.pow(graph.pos[nodeA][0] - graph.pos[nodeB][0], 2) + Math.pow(graph.pos[nodeA][1] - graph.pos[nodeB][1], 2)
+          );
+          return dist < r;
+     });
+
+     //Add links to all nodes that are within threshold
+     //of location of moved node
+     for (let node of graph.nodes) {
+          let nodeA = movedNode;
+          let nodeB = node.id;
+          let dist = Math.sqrt( Math.pow(graph.pos[nodeA][0] - graph.pos[nodeB][0], 2) + Math.pow(graph.pos[nodeA][1] - graph.pos[nodeB][1], 2)
+          );
+
+          //Add a link
+          if (dist < r) {
+               let link = {}
+               link.source = nodeA;
+               link.target = nodeB;
+               graph.links.push(link);
+          }
+     }
+
+     //Update adjacency list by creating a list of all edges
+     let edges = []
+     for(let link of graph.links) {
+          let nodeA = link.source;
+          let nodeB = link.target;
+          let dist = Math.sqrt( Math.pow(graph.pos[nodeA][0] - graph.pos[nodeB][0], 2) + Math.pow(graph.pos[nodeA][1] - graph.pos[nodeB][1], 2)
+          );
+          let etx = calcETX(dist);
+          let edge = [nodeA, nodeB, etx];
+          edges.push(edge);
+     }
+     makeAdjList(edges);
+
+}
+
 
 //Alows user to select start node for algorithm
 function selectStart(d) {
@@ -290,8 +355,8 @@ function genGeomGraph(numNodes, r) {
                          Math.pow(graph.pos[nodeA][1] - graph.pos[nodeB][1], 2)
                );
 
-               //Get ETX parameters from sliders
 
+               //Add a link if below the euclidian threshold
                if (i !== j) {
                     if (dist < r) {
                          let etx = calcETX(dist);
@@ -355,6 +420,8 @@ function placeNode(node, pos) {
      let padding = 10;
      let width = d3.select("svg").attr("width");
      let height = d3.select("svg").attr("height");
+
+     console.log(width);
 
      let nodePlaced = false;
      while (!nodePlaced) {
